@@ -7,19 +7,11 @@ const int buzzer = 0;
 const int redLed = 2;
 const int greenLed = 15;
 const int smokeSensor = 12;
-<<<<<<< HEAD
-const int maxSmokeLevel=21;
-const int phoneCallLength=10000;
-
- 
-const char* contacts[] = {"+256773367078"};//
-=======
 const int maxTemp=26;
 const int maxGasLevel=35;
 const int phoneCallLength=15000;
 
 const char* contacts[] = {"+256755643774","+256702439337"};
->>>>>>> 72031b186f67eea8bc91159961b4f4cf1da7019c
 int numContacts = sizeof(contacts) / sizeof(contacts[0]);
 //Buzzer buzzer(buzzerPin);
 Sim800L Sim800L(16, 17);
@@ -43,28 +35,6 @@ void GasSmokeLevel() {
   // delay(500);
   Serial.print("GasLevel: ");
   Serial.println(newvalue);
-<<<<<<< HEAD
-  if (newvalue > maxSmokeLevel) {
-   // Sim800L.sendSms("+256755643774","The Gas Level is ");
-   Serial.println((char*)contacts[0]);
-   Sim800L.callNumber((char*)contacts[0]);
- delay(10000);
- Sim800L.hangoffCall();
-   
-int i=0;
-while(i<6){
-
-Serial.println("Here......");
-  i++;
-  delay(5000);
-}
-
-    //digitalWrite(buzzer, HIGH);
-    digitalWrite(redLed, HIGH);
-    digitalWrite(greenLed, LOW);
-
-  } else {
-=======
 
   if (newvalue > maxGasLevel) {
    call();
@@ -73,7 +43,6 @@ Serial.println("Here......");
     digitalWrite(greenLed, LOW);// Increment the index
   }
    else {
->>>>>>> 72031b186f67eea8bc91159961b4f4cf1da7019c
     //digitalWrite(buzzer, LOW);
     digitalWrite(redLed, LOW);
     digitalWrite(greenLed, HIGH);
