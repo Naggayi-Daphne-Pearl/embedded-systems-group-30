@@ -1,14 +1,17 @@
 #include <Sim800L.h>
 #include <SoftwareSerial.h>
 #include <DHT11.h>
-#include <Buzzer.h>
+//#include <Buzzer.h>
 
 const int buzzer = 0;
 const int redLed = 2;
 const int greenLed = 15;
 const int smokeSensor = 12;
+const int maxSmokeLevel=21;
+const int phoneCallLength=10000;
+
  
-const char* contacts[] = {"+256702439337", "+256755643774"};
+const char* contacts[] = {"+256773367078"};//
 int numContacts = sizeof(contacts) / sizeof(contacts[0]);
 //Buzzer buzzer(buzzerPin);
 Sim800L Sim800L(16, 17);
@@ -32,25 +35,25 @@ void GasSmokeLevel() {
   // delay(500);
   Serial.print("GasLevel: ");
   Serial.println(newvalue);
-  if (newvalue > 30) {
-    //Sim800L.sendSms("+256702439337","The Gas Level is ");
-    int i=0;
-    while (i < numContacts) {
-      Serial.println((char*)contacts[i]);
-    bool result = Sim800L.sendSms((char*)contacts[i], "Hello from Quick Alert System");
-    Serial.println(result);
+  if (newvalue > maxSmokeLevel) {
+   // Sim800L.sendSms("+256755643774","The Gas Level is ");
+   Serial.println((char*)contacts[0]);
+   Sim800L.callNumber((char*)contacts[0]);
+ delay(10000);
+ Sim800L.hangoffCall();
+   
+int i=0;
+while(i<6){
 
-    // Serial.print("SMS send result: ");
-    // Serial.println(result ? "Success" : "Failure");
-    // delay(200);
-    ++i; // Increment the index
-  }
+Serial.println("Here......");
+  i++;
+  delay(5000);
+}
 
     //digitalWrite(buzzer, HIGH);
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
 
-  delay(30000);
   } else {
     //digitalWrite(buzzer, LOW);
     digitalWrite(redLed, LOW);
