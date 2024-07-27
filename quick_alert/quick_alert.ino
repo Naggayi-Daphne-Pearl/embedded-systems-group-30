@@ -13,6 +13,7 @@ const int smokeSensor = 12;
 const int maxTemp=27;
 const int maxGasLevel=35;
 const int phoneCallLength=15000;
+message=" ";
 
 const char* contacts[] = {"+256702439337"};
 int numContacts = sizeof(contacts) / sizeof(contacts[0]);
@@ -30,7 +31,7 @@ void setup() {
   pinMode(greenLed, OUTPUT);
   pinMode(buzzer, OUTPUT);
 
-  MySerial.begin(9600, SERIAL_8N1, 16, 17); // UART2, TX=16, RX=17
+  
   Serial.println("GSM Module Communication Starting...");
 
 }
@@ -60,39 +61,30 @@ void GasSmokeLevel() {
 }
 
 void readSms() {
-  String smsCountStr = Sim800L.getNumberSms(1);
-  Serial.print("SMS Count String: ");
-  Serial.println(smsCountStr);
-
-  int smsCount = smsCountStr.toInt(); // Convert the number of SMS messages to an integer
-  Serial.print("Number of sms: ");
-  Serial.println(smsCount);
-
-  if (smsCount > 0) {
-    for (int i = 1; i <= smsCount; i++) {
-      String message = Sim800L.readSms(i); // Read the SMS at index i
-      if (message.length() > 0) {
-        Serial.print("Received SMS: ");
-        Serial.println(message);
-
-        // Sim800L.deleteSms(i); // Optionally, delete the SMS after reading
-      } else {
-        Serial.print("Failed to read SMS at index: ");
-        Serial.println(i);
-      }
-    }
-  } else {
-    Serial.println("No SMS messages found.");
+  int index=AT+CMTI;// returns index of incoming message Cellular Message Timeline
+  while(index>0){
+    String msg=Sim800L.print("AT+CMGR");
+    Serial.print(msg);
+    index=index+1;
+    message=msg;
+    msg=" ";
   }
 }
 
+void reply(){
+  
+if(message=="Temperature"){
 
-void call(String phoneNumber,int phoneCallLength){
-  // String phoneNumber = "+256755643774"; // Replace with the actual phone number
+
+}
+void call(){
+  int i;
+  for(i=0;i<numContacts;i++){
   Sim800L.print("ATD"); // Send the ATD command
-  Sim800L.print(phoneNumber); // Send the phone number
-Sim800L.println(";"); // End the command with a semicolon and newline
-  Serial.println("Calling " + phoneNumber);
+  Sim800L.print((char*) contacts[i]); // Send the phone number
+  Sim800L.println(";"); // End the command with a semicolon and newline
+  Serial.print("Calling: ");
+  Serial.println((char*) contacts[i]);
 
   delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
 
@@ -101,6 +93,9 @@ Sim800L.println(";"); // End the command with a semicolon and newline
   Serial.println("Call ended.");
   delay(5000);
 
+  }
+ 
+  
 
 }
 
@@ -118,10 +113,10 @@ void sendSms(){
 }
 void loop() {
 
-
- GasSmokeLevel();
+  call();
+ //GasSmokeLevel();
   int temperature = dhtSensor.readTemperature();
-  readSms();
+  //readSms();
 
   if (temperature != DHT11::ERROR_CHECKSUM && temperature != DHT11::ERROR_TIMEOUT) {
     Serial.print("Temperature: ");
