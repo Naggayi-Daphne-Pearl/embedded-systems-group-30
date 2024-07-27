@@ -181,7 +181,7 @@ int i;
 
 void loop() {
  
-  sendSms("The temperature is :",temperature);
+  sendSms("The temperature is :");
   //delay(10000);
  // readSms();
   //call();
