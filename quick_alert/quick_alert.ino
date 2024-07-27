@@ -7,11 +7,11 @@ const int buzzer = 0;
 const int redLed = 2;
 const int greenLed = 15;
 const int smokeSensor = 12;
-const int maxTemp=26;
+const int maxTemp=27;
 const int maxGasLevel=35;
 const int phoneCallLength=15000;
 
-const char* contacts[] = {"+256755643774","+256702439337"};
+const char* contacts[] = {"+256702439337"};
 int numContacts = sizeof(contacts) / sizeof(contacts[0]);
 //Buzzer buzzer(buzzerPin);
 Sim800L Sim800L(16, 17);
@@ -21,11 +21,12 @@ DHT11 dhtSensor(4);
 
 void setup() {
   Serial.begin(9600); 
-  Sim800L.begin(4800);
+  Sim800L.begin(9600);
   Serial.println("Setting up");
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
   pinMode(buzzer, OUTPUT);
+
 }
 
 void GasSmokeLevel() {
@@ -37,10 +38,12 @@ void GasSmokeLevel() {
   Serial.println(newvalue);
 
   if (newvalue > maxGasLevel) {
-   call();
       //digitalWrite(buzzer, HIGH);
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);// Increment the index
+    //sendSms();
+    delay(10000);
+    readSms();//
   }
    else {
     //digitalWrite(buzzer, LOW);
@@ -56,7 +59,7 @@ void readSms() {
   Serial.println(smsCountStr);
 
   int smsCount = smsCountStr.toInt(); // Convert the number of SMS messages to an integer
-  Serial.print("Parsed SMS Count: ");
+  Serial.print("Number of sms: ");
   Serial.println(smsCount);
 
   if (smsCount > 0) {
@@ -113,12 +116,13 @@ void loop() {
 
     if (temperature > maxTemp) {
       // sending sms to multiple contacts
-      call();
-      //sendSms();
+      //call();
+      
       //Sim800L.callNumber("+256702439337");
       digitalWrite(redLed, HIGH);  // Turn on red LED
       digitalWrite(buzzer, HIGH);
-      digitalWrite(greenLed, LOW);  // Turn off green LED
+      digitalWrite(greenLed, LOW);
+      // Turn off green LED
       //Sim800L.callNumber("+256785796401")
     }
   
