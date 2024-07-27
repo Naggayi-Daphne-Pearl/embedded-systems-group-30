@@ -87,15 +87,15 @@ void readSms() {
 
 void call(String phoneNumber,int phoneCallLength){
   // String phoneNumber = "+256755643774"; // Replace with the actual phone number
-  sim800.print("ATD"); // Send the ATD command
-  sim800.print(phoneNumber); // Send the phone number
-sim800.println(";"); // End the command with a semicolon and newline
+  Sim800L.print("ATD"); // Send the ATD command
+  Sim800L.print(phoneNumber); // Send the phone number
+Sim800L.println(";"); // End the command with a semicolon and newline
   Serial.println("Calling " + phoneNumber);
 
   delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
 
   // Hang up the call
-  sim800.println("ATH"); // Send the ATH command to hang up
+  Sim800L.println("ATH"); // Send the ATH command to hang up
   Serial.println("Call ended.");
   delay(5000);
 
