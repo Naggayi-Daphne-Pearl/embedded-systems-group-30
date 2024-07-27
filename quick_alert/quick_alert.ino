@@ -1,7 +1,10 @@
 #include <Sim800L.h>
 #include <SoftwareSerial.h>
+
 #include <DHT11.h>
-#include <Buzzer.h>
+//#include <Buzzer.h>
+
+
 
 const int buzzer = 0;
 const int redLed = 2;
@@ -26,6 +29,10 @@ void setup() {
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
   pinMode(buzzer, OUTPUT);
+
+  MySerial.begin(9600, SERIAL_8N1, 16, 17); // UART2, TX=16, RX=17
+  Serial.println("GSM Module Communication Starting...");
+
 }
 
 void GasSmokeLevel() {
@@ -77,17 +84,24 @@ void readSms() {
   }
 }
 
-void call(){
-  //int numContacts = sizeof(contacts) / sizeof(contacts[0]);
-  int i;
-    for(i=0;i<numContacts;++i){
-      Sim800L.callNumber((char*)contacts[i]);
-      Serial.print("Calling: ");Serial.println((char*)contacts[i]);
-      delay(phoneCallLength);
-      Sim800L.hangoffCall();
-      delay(2000);
-    }
+
+void call(String phoneNumber,int phoneCallLength){
+  // String phoneNumber = "+256755643774"; // Replace with the actual phone number
+  sim800.print("ATD"); // Send the ATD command
+  sim800.print(phoneNumber); // Send the phone number
+sim800.println(";"); // End the command with a semicolon and newline
+  Serial.println("Calling " + phoneNumber);
+
+  delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
+
+  // Hang up the call
+  sim800.println("ATH"); // Send the ATH command to hang up
+  Serial.println("Call ended.");
+  delay(5000);
+
+
 }
+
 
 void sendSms(){
 
@@ -101,7 +115,9 @@ void sendSms(){
   delay(15000);
 }
 void loop() {
-  GasSmokeLevel();
+
+
+ GasSmokeLevel();
   int temperature = dhtSensor.readTemperature();
   readSms();
 
