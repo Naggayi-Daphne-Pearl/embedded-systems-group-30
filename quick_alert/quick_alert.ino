@@ -102,18 +102,37 @@ Sim800L.println(";"); // End the command with a semicolon and newline
 
 }
 
+void sendSms(String message){
 
-void sendSms(){
+int i;
 
-   int i;
-    for(i=0;i<numContacts;++i){
-    bool result = Sim800L.sendSms((char*)contacts[i], "Hello from Quick Alert System");
-    Serial.print(result ? "Sent to " : "Failed to send to ");
-    Serial.println((char*)contacts[i]);
-    delay(3000);
-    }
-  delay(15000);
+ for(i=0;i<numContacts;i++){
+Sim800L.println("AT+CMGF=1");     // Set SMS mode to text
+ delay(1000);
+  while (Sim800L.available()) {
+    Serial.write(Sim800L.read()); // Print the response to the serial monitor
+  }
+
+Sim800L.print("AT+CMGS=\"");
+ Sim800L.print((char*) contacts[i]);
+Sim800L.println("\"");
+ delay(1000);
+   while (Sim800L.available()) {
+    Serial.write(Sim800L.read()); // Print the response to the serial monitor
+  }
+ Sim800L.print(message);
+   delay(1000);
+Sim800L.write(26);
+delay(5000);
 }
+
+
+
+}
+
+
+
+
 void loop() {
 
 
