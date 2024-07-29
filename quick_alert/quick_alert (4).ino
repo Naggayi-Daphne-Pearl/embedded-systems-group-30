@@ -8,10 +8,10 @@
 
 const int buzzer = 0;
 const int redLed = 2;
-const int greenLed = 15;
+const int yellowLed = 15;
 const int smokeSensor = 12;
 const int maxTemp=26;
-const int maxGasLevel=35;
+const int maxGasLevel=19;
 const int phoneCallLength=15000;
 
 const char* contacts[] = {"+256702439337"};
@@ -27,7 +27,7 @@ void setup() {
   Sim800L.begin(4800);
   Serial.println("Setting up");
   pinMode(redLed, OUTPUT);
-  pinMode(greenLed, OUTPUT);
+  pinMode(yellowLed, OUTPUT);
   pinMode(buzzer, OUTPUT);
 
   Sim800L.print("AT+CMGF=1\r");
@@ -75,14 +75,15 @@ void GasSmokeLevel() {
 
   if (newvalue > maxGasLevel) {
    
-      //digitalWrite(buzzer, HIGH);
+    digitalWrite(buzzer, HIGH);
     digitalWrite(redLed, HIGH);
-    digitalWrite(greenLed, LOW);// Increment the index
+    digitalWrite(yellowLed, LOW);// Increment the index
+    call();
   }
    else {
-    //digitalWrite(buzzer, LOW);
+    digitalWrite(buzzer, LOW);
     digitalWrite(redLed, LOW);
-    digitalWrite(greenLed, HIGH);
+    digitalWrite(yellowLed, HIGH);
     delay(2000);
   }
 }
@@ -120,14 +121,29 @@ void readSms() {
         Serial.print("Received SMS: ");
         Serial.println(message);
 
+          // Extract sender's phone number
+        int startIdx = response.indexOf("+CMGL:", i) + 7; // Adjust to extract the sender's number
+        int endIdx = response.indexOf(",", startIdx);
+        String sender = response.substring(startIdx, endIdx);
         // Optionally, delete the SMS after reading
-        // Sim800L.deleteSms(i); 
+        Serial.print(sender);
+        readSms();
+        
+        //processSms(message, sender);
+        delay(3000);
+        String x=deleteSms(i);
+        Serial.print("Deleted message:");
+        Serial.println(x);
+
+        
       } else {
         Serial.print("Failed to read SMS at index: ");
         Serial.println(i);
       }
+      
     }
-  } else {
+  } 
+  else {
     Serial.println("No SMS messages found.");
   }
 }
@@ -178,20 +194,75 @@ String readSmsByIndex(int index) {
   }
 }
 
-void call(String phoneNumber,int phoneCallLength){
-  // String phoneNumber = "+256755643774"; // Replace with the actual phone number
-  Sim800L.print("ATD"); // Send the ATD command
-  Sim800L.print(phoneNumber); // Send the phone number
-  Sim800L.println(";"); // End the command with a semicolon and newline
-  Serial.println("Calling " + phoneNumber);
+void processSms(String message, String sender) {
+  Serial.print("Processing SMS from: ");
+  Serial.println(sender);
+  Serial.print("Message: ");
+  Serial.println(message);
 
-  delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
+  // Send a specific message based on the reply
+  sendReplyBasedOnResponse(sender, message);
+}
 
-  // Hang up the call
-  Sim800L.println("ATH"); // Send the ATH command to hang up
-  Serial.println("Call ended.");
-  delay(5000);
-  
+void sendReplyBasedOnResponse(String sender, String response) {
+  // Define different responses based on the received message
+  String replyMessage = "";
+
+  if (response=="Temperature") {
+    replyMessage = "Thank you for your confirmation!";
+  // } else if (response==GasLevel) {
+  //   replyMessage = "Sorry to hear that. Can you provide more details?";
+  } else if (response.indexOf("Help") != -1) {
+    replyMessage = "How can we assist you further?";
+  } else {
+    replyMessage = "Thank you for your response!";
+  }
+
+  // Send the reply message
+  sendSms(replyMessage.c_str());
+}
+
+String deleteSms(int index) {
+  // Clear the serial buffer before sending a new command
+  while (Sim800L.available()) {
+    Sim800L.read();
+  }
+
+  // Send the command to delete the SMS at the given index
+  Sim800L.print("AT+CMGD=");
+  Sim800L.print(index);
+  Sim800L.print("\r");
+  delay(1000); // Wait for the module to respond
+
+  // Read the response from the module
+  String response = "";
+  while (Sim800L.available()) {
+    char c = Sim800L.read();
+    response += c;
+  }
+
+  // Print the response for debugging
+  Serial.print("Delete SMS response: ");
+  Serial.println(response);
+
+  return response;
+}
+
+void call(){
+  int i;
+  for(i=0;i<numContacts;i++){
+    Sim800L.print("ATD"); // Send the ATD command
+    Sim800L.print((char*)contacts[i]); // Send the phone number
+    Sim800L.println(";"); // End the command with a semicolon and newline
+    Serial.print("Calling :" );
+    Serial.println((char*)contacts[i]);
+    delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
+
+    // Hang up the call
+    Sim800L.println("ATH"); // Send the ATH command to hang up
+    Serial.println("Call ended.");
+    delay(2000);
+  }
 
 }
 
@@ -218,16 +289,19 @@ void sendSms(String message){
   Sim800L.write(26);
   delay(5000);
   //readSms();
+
 }
-  delay(3000);
+ 
   
 }
 
-void loop() {
+void loop(){
+  //readSms();
   //sendSms("The temperature is");
-  
-  readSms();
-  //GasSmokeLevel();
+  //delay(1000);
+  //deleteSms(1);
+  //readSms();
+  GasSmokeLevel();
   int temperature = dhtSensor.readTemperature();
   
   if (temperature != DHT11::ERROR_CHECKSUM && temperature != DHT11::ERROR_TIMEOUT) {
@@ -242,14 +316,14 @@ void loop() {
       //Sim800L.callNumber("+256702439337");
       digitalWrite(redLed, HIGH);  // Turn on red LED
       digitalWrite(buzzer, HIGH);
-      digitalWrite(greenLed, LOW);  // Turn off green LED
+      digitalWrite(yellowLed, LOW);  // Turn off green LED
       //Sim800L.callNumber("+256785796401")
     }
   
     //delay(3000);
     else {
       digitalWrite(redLed, LOW);  // Turn off red LED
-      digitalWrite(greenLed, HIGH);
+      digitalWrite(yellowLed, HIGH);
       digitalWrite(buzzer, LOW);  // Turn on green LED
     } 
   }
