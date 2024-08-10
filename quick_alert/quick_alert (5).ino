@@ -2,8 +2,8 @@
 #include <SoftwareSerial.h>
 
 #include <DHT11.h>
-//#include <Buzzer.h>
 
+//#include <Buzzer.h>
 
 
 const int buzzer = 0;
@@ -14,7 +14,7 @@ const int maxTemp=30;
 const int maxGasLevel=35;
 const int phoneCallLength=15000;
 
-const char* contacts[] = {"+256702439337"};
+const char* contacts[] = {"+256750000783","+256702439337"};
 int numContacts = sizeof(contacts) / sizeof(contacts[0]);
 
 //Buzzer buzzer(buzzerPin);
@@ -67,6 +67,7 @@ void setup() {
   }
 }
 
+
 void GasSmokeLevel() {
   int value = analogRead(smokeSensor);
   // delay(500);
@@ -105,7 +106,7 @@ void readSms() {
 
   // Read the response from the module
   String response = "";
-  unsigned long startTime = millis(); 
+  unsigned long startTime = millis(); //millis() is a built-in Arduino function that returns the number of milliseconds since the Arduino board began running the current program.
   while (millis() - startTime < 5000) {  // Wait up to 5 seconds
     if (Sim800L.available()) {
       char c = Sim800L.read();
@@ -120,8 +121,9 @@ void readSms() {
   // Parsing response
   int startIndex = 0;
 
+
   while (true) {
-    int cmglIndex = response.indexOf("+CMGL:", startIndex);
+    int cmglIndex = response.indexOf("+CMGL:", startIndex); //CMGL lists messages getting the start index of the response
     if (cmglIndex == -1) break;  // No more SMS entries
 
     int endOfEntry = response.indexOf("\r\n", cmglIndex);
@@ -132,13 +134,14 @@ void readSms() {
     Serial.println(entry);
 
     int indexStart = entry.indexOf("+CMGL: ") + 7;
-    int indexEnd = entry.indexOf(",", indexStart);
+    int indexEnd = entry.indexOf(",", indexStart);//getting index of the first comma
     String indexStr = entry.substring(indexStart, indexEnd);
     int smsIndex = indexStr.toInt();
 
     Serial.print("SMS Index: ");
     Serial.println(smsIndex);
 
+    //extracting the sender's contact
     int senderStart = entry.indexOf("\",\"", indexEnd) + 3;
     int senderEnd = entry.indexOf("\",\"", senderStart);
     String sender = entry.substring(senderStart, senderEnd);
@@ -146,11 +149,12 @@ void readSms() {
     Serial.print("Sender: ");
     Serial.println(sender);
 
+    //getting index of the message to extract the actual message
     int contentStart = entry.indexOf("\r\n", senderEnd) + 2;
     int contentEnd = entry.indexOf("\r\n", contentStart);
     if (contentEnd == -1) contentEnd = entry.length();
     String message = entry.substring(contentStart, contentEnd);
-    message.trim();
+    message.trim();//removes any whitespace 
 
     Serial.print("Message: ");
     Serial.println(message);
@@ -302,10 +306,30 @@ void call(){
     Serial.println((char*)contacts[i]);
     delay(phoneCallLength); // Wait for 10 seconds (simulate an active call)
 
+
+    String response = "";
+    unsigned long startTime = millis();
+    while (millis() - startTime < 5000) { // Wait up to 5 seconds for a response
+      if (Sim800L.available()) {
+        char c = Sim800L.read();
+        response += c;
+      }
+    }
+    Serial.print("Call response: ");
+    Serial.println(response);
+
+    // Check for OK or CONNECT responses to verify the call was made
+    if (response.indexOf("OK") != -1 || response.indexOf("CONNECT") != -1) {
+      delay(phoneCallLength); // Wait for the duration of the simulated call
+    } else {
+      Serial.println("Failed to initiate the call.");
+    }
+
     // Hang up the call
     Sim800L.println("ATH"); // Send the ATH command to hang up
     Serial.println("Call ended.");
-    delay(2000);
+    delay(2000); //
+    
   }
 
 }
@@ -318,7 +342,7 @@ void sendSms(String message) {
     }
 
     // Set SMS mode to text
-    Sim800L.println("AT+CMGF=1");
+    Sim800L.println("AT+CMGF=1");//command for sending sms with the format as text
     delay(1000);  // Wait for the module to respond
     while (Sim800L.available()) {
       Serial.write(Sim800L.read()); // Print the response to the serial monitor
@@ -363,7 +387,8 @@ void sendSms(String message) {
 
 
 void loop(){
-  
+ // Sim800L.callNumber("+256702439337");
+  call();
   //readSms();
   //sendSms("The temperature is");
   //delay(1000);
