@@ -284,8 +284,6 @@ void sendReplyBasedOnResponse(String sender, String response,int temperature,int
   } else if (response.indexOf("Help") != -1) {
     replyMessage = "How can we assist you further?";
   } else {
-    // replyMessage = "The current temperature is " + String(temperature) + " °C.";
-    // replyMessage = "The current gas level is " + String(gasLevel) + ".";
      replyMessage = "Thank you for your response.";
     
   }
